@@ -1,22 +1,93 @@
 import mysql.connector
+from mysql.connector import errorcode
 
-config = {
-  'user': 'tu_usuario',
-  'password': 'tu_contraseña',
-  'host': 'direccion_del_servidor',
-  'database': 'nombre_de_la_base_de_datos',
-  'port': '3306' # Generalmente 3306 para MySQL
-}
+def create_connection():
+    try:
+        db = mysql.connector.connect(
+            host="bxkcn93dxb5qzbaf2th7-mysql.services.clever-cloud.com",
+            user="ude5ew8s9zf8o1bw",
+            password="zucUaOmeMxamFHXfORRJ",
+            database="bxkcn93dxb5qzbaf2th7"
+        )
+        print("Conexión exitosa")
+        return db
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Algo está mal con tu usuario o contraseña")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("La base de datos no existe")
+        else:
+            print(f"Error: {err}")
+        return None
 
-# Intenta establecer la conexión
-try:
-    conn = mysql.connector.connect(**config)
-    print("Conexión establecida con la base de datos SQL en Clever Cloud.")
-    # Aquí puedes realizar operaciones con la base de datos
-    # Por ejemplo, ejecutar consultas SQL, insertar datos, etc.
+def insert_user(db, username, email):
+    if db:
+        cursor = db.cursor()
+        sql = "INSERT INTO users (username, email) VALUES (%s, %s)"
+        val = (username, email)
+        try:
+            cursor.execute(sql, val)
+            db.commit()
+            print(cursor.rowcount, "registro insertado.")
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+        finally:
+            cursor.close()
+    else:
+        print("No se puede insertar usuario sin conexión a la base de datos")
 
-    # No olvides cerrar la conexión cuando hayas terminado
-    conn.close()
-    print("Conexión cerrada.")
-except mysql.connector.Error as err:
-    print("Error al conectar con la base de datos: ", err)
+def get_users(db):
+    if db:
+        cursor = db.cursor()
+        try:
+            cursor.execute("SELECT * FROM users")
+            result = cursor.fetchall()
+            for row in result:
+                print(row)
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+        finally:
+            cursor.close()
+    else:
+        print("No se pueden obtener usuarios sin conexión a la base de datos")
+
+def delete_user(db, user_id):
+    if db:
+        cursor = db.cursor()
+        sql = "DELETE FROM users WHERE id = %s"
+        val = (user_id,)
+        try:
+            cursor.execute(sql, val)
+            db.commit()
+            print(cursor.rowcount, "registro eliminado.")
+        except mysql.connector.Error as err:
+            print(f"Error: {err}")
+        finally:
+            cursor.close()
+    else:
+        print("No se puede eliminar usuario sin conexión a la base de datos")
+
+def menu():
+    db = create_connection()
+    while True:
+        print("1. Insert User")
+        print("2. Show Users")
+        print("3. Delete User")
+        print("4. Exit")
+        choice = input("Enter choice: ")
+        if choice == '1':
+            username = input("Enter username: ")
+            email = input("Enter email: ")
+            insert_user(db, username, email)
+        elif choice == '2':
+            get_users(db)
+        elif choice == '3':
+            user_id = input("Enter user ID to delete: ")
+            delete_user(db, user_id)
+        elif choice == '4':
+            if db:
+                db.close()
+            break
+
+if __name__ == "__main__":
+    menu()
