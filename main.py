@@ -70,19 +70,19 @@ def delete_user(db, user_id):
 def menu():
     db = create_connection()
     while True:
-        print("1. Insert User")
-        print("2. Show Users")
-        print("3. Delete User")
-        print("4. Exit")
-        choice = input("Enter choice: ")
+        print("1. Insertar usuario.")
+        print("2. Mostrar usuarios.")
+        print("3. Eliminar usuario.")
+        print("4. Salir.")
+        choice = input("Elige una opción: ")
         if choice == '1':
-            username = input("Enter username: ")
-            email = input("Enter email: ")
+            username = input("Escribe nombre de usuario: ")
+            email = input("Escribe email: ")
             insert_user(db, username, email)
         elif choice == '2':
             get_users(db)
         elif choice == '3':
-            user_id = input("Enter user ID to delete: ")
+            user_id = input("Escribe la ID del usuario a eliminar: ")
             delete_user(db, user_id)
         elif choice == '4':
             if db:
